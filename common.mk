@@ -21,28 +21,24 @@ CXXFLAGS:=$(C_FLAGS) $(addprefix -I,$(INC_DIRS))
 ifeq ($(APP_TYPE),static_lib)
     CXXFLAGS+=-fPIC
     APP_NAME:=lib$(APP_NAME).a
+else ifeq ($(APP_TYPE),dynamic_lib)
+    CXXFLAGS+=-fPIC
+    LD_FLAGS:=-s -shared -Wl,--soname,$(SO_SHORT_NAME)
+    APP_SO_NAME:=lib$(APP_NAME).so
+    APP_SHORT_NAME:=$(APP_SO_NAME).$(VERSION_MAJOR)
+    APP_NAME:=$(APP_SO_NAME).$(VERSION)
+else ifeq ($(APP_TYPE),app)
+    LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIB_NAMES))
 else
-    ifeq ($(APP_TYPE),dynamic_lib)
-        CXXFLAGS+=-fPIC
-        APP_SO_NAME:=lib$(APP_NAME).so
-        APP_SHORT_NAME:=$(APP_SO_NAME).$(VERSION_MAJOR)
-        APP_NAME:=$(APP_SO_NAME).$(VERSION)
-    else
-        ifneq ($(APP_TYPE),app)
-            $(error Invalid value for "APP_TYPE", must be 'static_lib', \
-                    'dynamic_lib', or 'app')
-        endif
-    endif
+    $(error Invalid value for "APP_TYPE", must be 'static_lib', 'dynamic_lib', or 'app')
 endif
 
 ifeq ($(PLATFORM),x86)
     CXXFLAGS+=-m32
+else ifeq ($(PLATFORM),x64)
+    CXXFLAGS+=-m64
 else
-    ifeq ($(PLATFORM),x64)
-        CXXFLAGS+=-m64
-    else
-        $(error Unrecognized PLATFORM value, use x86 or x64)
-    endif
+    $(error Unrecognized PLATFORM value, use x86 or x64)
 endif
 
 OBJS:=$(addprefix $(BUILD_DIR)/$(PLATFORM)/,$(SRCS:%.cpp=%.o))
@@ -59,3 +55,13 @@ $(BUILD_DIR)/$(PLATFORM):
 $(DIST_DIR)/$(PLATFORM):
 	mkdir -p $@
 
+$(APP_OUTPUT): $(OBJS)
+ifeq ($(APP_TYPE),static_lib)
+	$(AR) -cvru $@ $?
+else ifeq ($(APP_TYPE),dynamic_lib)
+	$(CXX) -o $@ $(LD_FLAGS) $^
+	ln -s $(APP_NAME) $(DIST_DIR)/$(PLATFORM)/$(APP_SHORT_NAME)
+	ln -s $(APP_SHORT_NAME) $(DIST_DIR)/$(PLATFORM)/$(APP_SO_NAME)
+else ifeq ($(APP_TYPE),app)
+	$(CXX) -o $@ $^ $(LD_FLAGS)
+endif
