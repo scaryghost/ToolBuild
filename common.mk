@@ -67,3 +67,9 @@ else ifeq ($(APP_TYPE),dynamic_lib)
 else ifeq ($(APP_TYPE),app)
 	$(CXX) -o $@ $^ $(LD_FLAGS)
 endif
+
+clean:
+	rm -Rf $(OBJS) $(DIST_DIR_PLATFORM)
+
+cleanest:
+	rm -Rf $(BUILD_DIR) $(DIST_DIR)
