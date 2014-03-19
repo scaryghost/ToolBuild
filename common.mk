@@ -32,11 +32,11 @@ ifeq ($(APP_TYPE),static_lib)
     CXXFLAGS+=-fPIC
     APP_NAME:=lib$(APP_NAME).a
 else ifeq ($(APP_TYPE),dynamic_lib)
-    CXXFLAGS+=-fPIC
-    LD_FLAGS:=-s -shared -Wl,--soname,$(SO_SHORT_NAME)
     APP_SO_NAME:=lib$(APP_NAME).so
     APP_SHORT_NAME:=$(APP_SO_NAME).$(VERSION_MAJOR)
     APP_NAME:=$(APP_SO_NAME).$(VERSION)
+    CXXFLAGS+=-fPIC
+    LD_FLAGS:=-s -shared -Wl,--soname,$(APP_SHORT_NAME)
 else ifeq ($(APP_TYPE),app)
     LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIB_NAMES))
 else
