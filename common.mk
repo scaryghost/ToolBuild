@@ -5,7 +5,7 @@ ifndef MODULES
     $(error Required variable "MODULES" not set)
 endif
 
-BUILD_DIR:=build
+BUILD_DIR?=build
 DIST_DIR?=dist
 PLATFORM?=x64
 
@@ -40,19 +40,21 @@ else ifeq ($(PLATFORM),x64)
 else
     $(error Unrecognized PLATFORM value, use x86 or x64)
 endif
+DIST_DIR_PLATFORM:=$(DIST_DIR)/$(PLATFORM)
+BUILD_DIR_PLATFORM:=$(BUILD_DIR)/$(PLATFORM)
 
-OBJS:=$(addprefix $(BUILD_DIR)/$(PLATFORM)/,$(SRCS:%.cpp=%.o))
-APP_OUTPUT:=$(DIST_DIR)/$(PLATFORM)/$(APP_NAME)
+OBJS:=$(addprefix $(BUILD_DIR_PLATFORM)/,$(SRCS:%.cpp=%.o))
+APP_OUTPUT:=$(DIST_DIR_PLATFORM)/$(APP_NAME)
 
-all: $(BUILD_DIR)/$(PLATFORM) $(DIST_DIR)/$(PLATFORM) $(APP_OUTPUT)
+all: $(BUILD_DIR_PLATFORM) $(DIST_DIR_PLATFORM) $(APP_OUTPUT)
 
-$(BUILD_DIR)/$(PLATFORM)/%.o: %.cpp
+$(BUILD_DIR_PLATFORM)/%.o: %.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-$(BUILD_DIR)/$(PLATFORM):
-	find $(MODULES) -type d -exec mkdir -p -- "$(BUILD_DIR)/$(PLATFORM)/{}" \;
+$(BUILD_DIR_PLATFORM):
+	find $(MODULES) -type d -exec mkdir -p -- "$@/{}" \;
 
-$(DIST_DIR)/$(PLATFORM):
+$(DIST_DIR_PLATFORM):
 	mkdir -p $@
 
 $(APP_OUTPUT): $(OBJS)
@@ -60,8 +62,8 @@ ifeq ($(APP_TYPE),static_lib)
 	$(AR) -cvru $@ $?
 else ifeq ($(APP_TYPE),dynamic_lib)
 	$(CXX) -o $@ $(LD_FLAGS) $^
-	ln -s $(APP_NAME) $(DIST_DIR)/$(PLATFORM)/$(APP_SHORT_NAME)
-	ln -s $(APP_SHORT_NAME) $(DIST_DIR)/$(PLATFORM)/$(APP_SO_NAME)
+	ln -s $(APP_NAME) $(DIST_DIR_PLATFORM)/$(APP_SHORT_NAME)
+	ln -s $(APP_SHORT_NAME) $(DIST_DIR_PLATFORM)/$(APP_SO_NAME)
 else ifeq ($(APP_TYPE),app)
 	$(CXX) -o $@ $^ $(LD_FLAGS)
 endif
