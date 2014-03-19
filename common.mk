@@ -8,6 +8,7 @@ endif
 BUILD_DIR?=build
 DIST_DIR?=dist
 PLATFORM?=x64
+CONFIGURATION?=release
 
 SRCS:=
 
@@ -18,6 +19,15 @@ include $(MODULES_CONFIG)
 -include $(MODULES_RULES)
 
 CXXFLAGS:=$(C_FLAGS) $(addprefix -I,$(INC_DIRS))
+ifeq ($(CONFIGURATION),debug)
+    APP_NAME:=$(APP_NAME)_d
+    CXXFLAGS+=-g
+else ifeq ($(CONFIGURATION),release)
+    CXXFLAGS+=-O3
+else
+    $(error Invalid value for "CONFIGURATION", must be 'release' or 'debug')
+endif
+
 ifeq ($(APP_TYPE),static_lib)
     CXXFLAGS+=-fPIC
     APP_NAME:=lib$(APP_NAME).a
@@ -40,21 +50,21 @@ else ifeq ($(PLATFORM),x64)
 else
     $(error Unrecognized PLATFORM value, use x86 or x64)
 endif
-DIST_DIR_PLATFORM:=$(DIST_DIR)/$(PLATFORM)
-BUILD_DIR_PLATFORM:=$(BUILD_DIR)/$(PLATFORM)
+REAL_DIST_DIR:=$(DIST_DIR)/$(PLATFORM)
+REAL_BUILD_DIR:=$(BUILD_DIR)/$(PLATFORM)/$(CONFIGURATION)
 
-OBJS:=$(addprefix $(BUILD_DIR_PLATFORM)/,$(SRCS:%.cpp=%.o))
-APP_OUTPUT:=$(DIST_DIR_PLATFORM)/$(APP_NAME)
+OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))
+APP_OUTPUT:=$(REAL_DIST_DIR)/$(APP_NAME)
 
-all: $(BUILD_DIR_PLATFORM) $(DIST_DIR_PLATFORM) $(APP_OUTPUT)
+all: $(REAL_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 
-$(BUILD_DIR_PLATFORM)/%.o: %.cpp
+$(REAL_BUILD_DIR)/%.o: %.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-$(BUILD_DIR_PLATFORM):
+$(REAL_BUILD_DIR):
 	find $(MODULES) -type d -exec mkdir -p -- "$@/{}" \;
 
-$(DIST_DIR_PLATFORM):
+$(REAL_DIST_DIR):
 	mkdir -p $@
 
 $(APP_OUTPUT): $(OBJS)
@@ -62,14 +72,14 @@ ifeq ($(APP_TYPE),static_lib)
 	$(AR) -cvru $@ $?
 else ifeq ($(APP_TYPE),dynamic_lib)
 	$(CXX) -o $@ $(LD_FLAGS) $^
-	ln -s $(APP_NAME) $(DIST_DIR_PLATFORM)/$(APP_SHORT_NAME)
-	ln -s $(APP_SHORT_NAME) $(DIST_DIR_PLATFORM)/$(APP_SO_NAME)
+	ln -s $(APP_NAME) $(REAL_DIST_DIR)/$(APP_SHORT_NAME)
+	ln -s $(APP_SHORT_NAME) $(REAL_DIST_DIR)/$(APP_SO_NAME)
 else ifeq ($(APP_TYPE),app)
 	$(CXX) -o $@ $^ $(LD_FLAGS)
 endif
 
 clean:
-	rm -Rf $(OBJS) $(DIST_DIR_PLATFORM)
+	rm -Rf $(OBJS) $(REAL_DIST_DIR)
 
 cleanest:
 	rm -Rf $(BUILD_DIR) $(DIST_DIR)
