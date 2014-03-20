@@ -1,7 +1,11 @@
 #!/usr/bin/env sh
 
-version=$(git describe)
-version=${version%-*[^-]}
+describe=$(git describe --long --always)
+version=${describe%-*[^-]}
+if [ $describe = $version ];
+then
+    version="0.0.0"
+fi
 version=${version/-/.}
 
 split=(${version//\./ })
