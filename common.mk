@@ -5,6 +5,9 @@ ifndef MODULES
     $(error Required variable "MODULES" not set)
 endif
 
+$(shell ./ToolBuild/configure_version.sh)
+-include project_version.mk
+
 BUILD_DIR?=build
 DIST_DIR?=dist
 PLATFORM?=x64

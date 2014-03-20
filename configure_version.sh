@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 
-version=$(git describe | sed s/-[^-]*$// | sed s/-/\./)
+version=$(git describe)
+version=${version%-*[^-]}
+version=${version/-/.}
+
 split=(${version//\./ })
 step=0
 
