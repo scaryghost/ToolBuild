@@ -10,8 +10,15 @@ $(shell ./ToolBuild/configure_version.sh)
 
 BUILD_DIR?=build
 DIST_DIR?=dist
-PLATFORM?=x64
 CONFIGURATION?=release
+
+ifndef PLATFORM
+    ifeq ($(shell uname -m), x86_64)
+        PLATFORM:=x64
+    else
+        PLATFORM:=x86
+    endif
+endif
 
 SRCS:=
 
