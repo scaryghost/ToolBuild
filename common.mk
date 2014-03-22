@@ -1,3 +1,5 @@
+include progress_config.mk
+
 ifndef APP_NAME
     $(error Required variable "APP_NAME" not set)
 endif
