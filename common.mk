@@ -1,4 +1,4 @@
-include progress_config.mk
+include project_config.mk
 
 ifndef APP_NAME
     $(error Required variable "APP_NAME" not set)
@@ -51,8 +51,6 @@ else ifeq ($(APP_TYPE),dynamic_lib)
     LD_FLAGS:=-s -shared -Wl,--soname,$(APP_SHORT_NAME)
 else ifeq ($(APP_TYPE),app)
     LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIB_NAMES))
-else
-    $(error Invalid value for "APP_TYPE", must be 'static_lib', 'dynamic_lib', or 'app')
 endif
 
 ifeq ($(PLATFORM),x86)
