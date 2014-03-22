@@ -1,6 +1,5 @@
-TOOL_BUILD_DIR:=ToolBuild
-COMMON_MK:=$(TOOL_BUILD_DIR)/common.mk
-BASE_MAKE:=make -f $(COMMON_MK) $(MAKEFLAGS)
+TOOL_BUILD_DIR?=ToolBuild
+BASE_MAKE:=make -f $(TOOL_BUILD_DIR)/common.mk $(MAKEFLAGS)
 
 app:
 	$(BASE_MAKE) APP_TYPE=app
