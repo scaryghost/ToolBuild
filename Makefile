@@ -31,3 +31,6 @@ clean:
 
 cleanest:
 	$(BASE_MAKE) cleanest
+
+archive:
+	$(BASE_MAKE) archive

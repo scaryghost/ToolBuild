@@ -43,14 +43,17 @@ endif
 ifeq ($(APP_TYPE),static_lib)
     CXXFLAGS+=-fPIC
     APP_NAME:=lib$(APP_NAME).a
+    TYPE:=lib
 else ifeq ($(APP_TYPE),dynamic_lib)
     APP_SO_NAME:=lib$(APP_NAME).so
     APP_SHORT_NAME:=$(APP_SO_NAME).$(VERSION_MAJOR)
     APP_NAME:=$(APP_SO_NAME).$(VERSION)
     CXXFLAGS+=-fPIC
     LD_FLAGS:=-s -shared -Wl,--soname,$(APP_SHORT_NAME)
+    TYPE:=lib
 else ifeq ($(APP_TYPE),app)
     LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIB_NAMES))
+    TYPE:=bin
 endif
 
 ifeq ($(PLATFORM),x86)
@@ -60,7 +63,7 @@ else ifeq ($(PLATFORM),x64)
 else
     $(error Unrecognized PLATFORM value, use x86 or x64)
 endif
-REAL_DIST_DIR:=$(DIST_DIR)/$(PLATFORM)
+REAL_DIST_DIR:=$(DIST_DIR)/$(TYPE)/$(PLATFORM)
 REAL_BUILD_DIR:=$(BUILD_DIR)/$(PLATFORM)/$(CONFIGURATION)
 
 OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))
@@ -88,6 +91,11 @@ else ifeq ($(APP_TYPE),app)
 	$(CXX) -o $@ $^ $(LD_FLAGS)
 endif
 
+archive: $(APP_OUTPUT)
+	tar -cvf $(APP_NAME)_$(VERSION).tar --transform 's,^,include/,' $(EXPORT_HEADERS)
+	tar -rvf $(APP_NAME)_$(VERSION).tar -C $(DIST_DIR) .
+	bzip2 $(APP_NAME)_$(VERSION).tar
+	
 clean:
 	rm -Rf $(OBJS) $(REAL_DIST_DIR)
 
