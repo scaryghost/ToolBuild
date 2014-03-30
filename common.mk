@@ -58,8 +58,10 @@ endif
 
 ifeq ($(PLATFORM),x86)
     CXXFLAGS+=-m32
+    LD_FLAGS+=-m32
 else ifeq ($(PLATFORM),x64)
     CXXFLAGS+=-m64
+    LD_FLAGS+=-m64
 else
     $(error Unrecognized PLATFORM value, use x86 or x64)
 endif
@@ -91,11 +93,20 @@ else ifeq ($(APP_TYPE),app)
 	$(CXX) -o $@ $^ $(LD_FLAGS)
 endif
 
-archive: $(APP_OUTPUT)
-	tar -cvf $(APP_NAME)_$(VERSION).tar --transform 's,^,include/,' $(EXPORT_HEADERS)
-	tar -rvf $(APP_NAME)_$(VERSION).tar -C $(DIST_DIR) .
-	bzip2 $(APP_NAME)_$(VERSION).tar
+ARCHIVE_NAME:=$(DIST_DIR)/$(APP_NAME).tar
+
+archive: $(ARCHIVE_NAME).gz
+
+$(ARCHIVE_NAME).gz: $(ARCHIVE_NAME)
+	gzip -k $<
+
+$(ARCHIVE_NAME):
+	tar -cvf $@ --transform 's,^,include/,' $(EXPORT_HEADERS)
+	tar -rvf $@ -C $(DIST_DIR) .
 	
+publish: archive
+	ant publish -Dversion=$(VERSION) -Ddist.dir=$(DIST_DIR) -Dtool.build.dir=$(TOOL_BUILD_DIR)
+
 clean:
 	rm -Rf $(OBJS) $(REAL_DIST_DIR)
 

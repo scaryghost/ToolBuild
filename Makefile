@@ -1,4 +1,4 @@
-TOOL_BUILD_DIR?=ToolBuild
+export TOOL_BUILD_DIR?=ToolBuild
 BASE_MAKE:=make -f $(TOOL_BUILD_DIR)/common.mk $(MAKEFLAGS)
 
 app:
@@ -34,3 +34,6 @@ cleanest:
 
 archive:
 	$(BASE_MAKE) archive
+
+publish:
+	$(BASE_MAKE) publish

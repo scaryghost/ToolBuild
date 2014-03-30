@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="ivy-build" default="publish" basedir="." >
+    <target name="ivy-resolve">
+        <ivy:resolve file="ivy.xml"/>
+        <ivy:retrieve pattern="dist/libs/[artifact]-[revision].[ext]" sync="true" />
+        <path id="lib.path">
+            <fileset dir="dist/libs" includes="**.jar"/>
+        </path>
+    </target>
+    <target name="publish" depends="ivy-resolve" description="Publish this build into repository">
+        <ivy:deliver deliverpattern="${dist.dir}/[artifact].[ext]" pubrevision="${version}"/>
+        <ivy:publish pubrevision="${version}" resolver="default" >
+            <artifacts pattern="${dist.dir}/[artifact].[ext]"/>
+        </ivy:publish>
+    </target>
+</project>
