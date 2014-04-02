@@ -100,8 +100,11 @@ archive: $(ARCHIVE_NAME).gz
 $(ARCHIVE_NAME).gz: $(ARCHIVE_NAME)
 	gzip -k $<
 
+ifdef INCLUDE_PREFIX
+    INCLUDE_PREFIX:=$(INCLUDE_PREFIX)/
+endif
 $(ARCHIVE_NAME):
-	tar -cvf $@ --transform 's,^,include/,' $(EXPORT_HEADERS)
+	tar -cvf $@ --transform 's,^,include/$(INCLUDE_PREFIX),' $(EXPORT_HEADERS)
 	tar -rvf $@ -C $(DIST_DIR) .
 	
 publish: archive
