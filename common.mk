@@ -32,6 +32,10 @@ MODULES_RULES:= $(addsuffix /src/rules.mk, $(MODULES))
 include $(MODULES_CONFIG)
 -include $(MODULES_RULES)
 
+ifdef EXT_LIBS_DIR
+    LIB_DIRS:=$(LIB_DIRS) $(EXT_LIBS_DIR)/lib/$(PLATFORM)
+    INC_DIRS:=$(INC_DIRS) $(EXT_LIBS_DIR)/include
+endif
 CXXFLAGS:=$(C_FLAGS) $(addprefix -I,$(INC_DIRS))
 ifeq ($(CONFIGURATION),debug)
     APP_NAME:=$(APP_NAME)_d
@@ -54,7 +58,9 @@ else ifeq ($(APP_TYPE),dynamic_lib)
     LD_FLAGS:=-s -shared -Wl,--soname,$(APP_SHORT_NAME)
     TYPE:=lib
 else ifeq ($(APP_TYPE),app)
-    LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIB_NAMES))
+    LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) -Wl,-Bstatic $(addprefix -l,$(STATIC_LIBS)) \
+    -Wl,-Bdynamic $(addprefix -l,$(DYNAMIC_LIBS))
+            
     TYPE:=bin
 endif
 
