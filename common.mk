@@ -1,3 +1,5 @@
+.PHONY: clean cleanest unpack retrieve
+
 include project_config.mk
 
 ifndef APP_NAME
@@ -73,7 +75,7 @@ APP_OUTPUT:=$(REAL_DIST_DIR)/$(APP_NAME)
 
 all: $(REAL_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 
-$(REAL_BUILD_DIR)/%.o: %.cpp
+$(REAL_BUILD_DIR)/%.o: %.cpp | $(EXT_LIBS_DIR)/include
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 $(REAL_BUILD_DIR):
@@ -112,3 +114,9 @@ clean:
 
 cleanest:
 	rm -Rf $(BUILD_DIR) $(DIST_DIR)
+
+$(EXT_LIBS_DIR)/archive:
+	ant retrieve -Dext.libs.dir=$(EXT_LIBS_DIR)
+
+$(EXT_LIBS_DIR)/include: $(EXT_LIBS_DIR)/archive
+	find $? -type f -exec tar -xvzf "{}" -C $(EXT_LIBS_DIR) \;
