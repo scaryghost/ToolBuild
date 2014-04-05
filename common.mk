@@ -1,4 +1,4 @@
-.PHONY: clean cleanest unpack retrieve
+.PHONY: clean cleanest retrieve
 
 include project_config.mk
 
@@ -81,7 +81,7 @@ APP_OUTPUT:=$(REAL_DIST_DIR)/$(APP_NAME)
 
 all: $(REAL_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 
-$(REAL_BUILD_DIR)/%.o: %.cpp | $(EXT_LIBS_DIR)/include
+$(REAL_BUILD_DIR)/%.o: %.cpp | retrieve
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 $(REAL_BUILD_DIR):
@@ -119,10 +119,12 @@ clean:
 	rm -Rf $(OBJS) $(REAL_DIST_DIR)
 
 cleanest:
-	rm -Rf $(BUILD_DIR) $(DIST_DIR)
+	rm -Rf $(BUILD_DIR) $(DIST_DIR) $(EXT_LIBS_DIR)
 
-$(EXT_LIBS_DIR)/archive:
-	ant retrieve -Dext.libs.dir=$(EXT_LIBS_DIR)
+$(EXT_LIBS_DIR)/cache:
+	ant retrieve -Dext.libs.dir.cache=$@
 
-$(EXT_LIBS_DIR)/include: $(EXT_LIBS_DIR)/archive
+$(EXT_LIBS_DIR)/include: $(EXT_LIBS_DIR)/cache
 	find $? -type f -exec tar -xvzf "{}" -C $(EXT_LIBS_DIR) \;
+
+retrieve: $(EXT_LIBS_DIR)/include
