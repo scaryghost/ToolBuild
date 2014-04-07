@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="ivy-build" default="publish" basedir="." >
+    <target name="setup">
+        <mkdir dir="${ext.libs.dir.cache}" />
+    </target>
     <target name="ivy-resolve">
         <ivy:resolve file="ivy.xml"/>
-        <ivy:retrieve pattern="dist/libs/[artifact]-[revision].[ext]" sync="true" />
+        <ivy:retrieve pattern="${ext.libs.dir.cache}/[artifact]-[revision].[ext]" sync="true" />
         <path id="lib.path">
             <fileset dir="dist/libs" includes="**.jar"/>
         </path>
@@ -13,4 +16,5 @@
             <artifacts pattern="${dist.dir}/[artifact].[ext]"/>
         </ivy:publish>
     </target>
+    <target name="retrieve" depends="setup,ivy-resolve" description="Retrieve dependencies" />
 </project>

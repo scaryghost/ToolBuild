@@ -1,3 +1,5 @@
+.PHONY: clean cleanest retrieve
+
 include project_config.mk
 
 ifndef APP_NAME
@@ -30,6 +32,10 @@ MODULES_RULES:= $(addsuffix /src/rules.mk, $(MODULES))
 include $(MODULES_CONFIG)
 -include $(MODULES_RULES)
 
+ifdef EXT_LIBS_DIR
+    LIB_DIRS:=$(LIB_DIRS) $(EXT_LIBS_DIR)/lib/$(PLATFORM)
+    INC_DIRS:=$(INC_DIRS) $(EXT_LIBS_DIR)/include
+endif
 CXXFLAGS:=$(C_FLAGS) $(addprefix -I,$(INC_DIRS))
 ifeq ($(CONFIGURATION),debug)
     APP_NAME:=$(APP_NAME)_d
@@ -52,7 +58,9 @@ else ifeq ($(APP_TYPE),dynamic_lib)
     LD_FLAGS:=-s -shared -Wl,--soname,$(APP_SHORT_NAME)
     TYPE:=lib
 else ifeq ($(APP_TYPE),app)
-    LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIB_NAMES))
+    LD_FLAGS:=$(addprefix -L,$(LIB_DIRS)) -Wl,-Bstatic $(addprefix -l,$(STATIC_LIBS)) \
+    -Wl,-Bdynamic $(addprefix -l,$(DYNAMIC_LIBS))
+            
     TYPE:=bin
 endif
 
@@ -73,7 +81,7 @@ APP_OUTPUT:=$(REAL_DIST_DIR)/$(APP_NAME)
 
 all: $(REAL_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 
-$(REAL_BUILD_DIR)/%.o: %.cpp
+$(REAL_BUILD_DIR)/%.o: %.cpp | retrieve
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 $(REAL_BUILD_DIR):
@@ -114,4 +122,12 @@ clean:
 	rm -Rf $(OBJS) $(REAL_DIST_DIR)
 
 cleanest:
-	rm -Rf $(BUILD_DIR) $(DIST_DIR)
+	rm -Rf $(BUILD_DIR) $(DIST_DIR) $(EXT_LIBS_DIR)
+
+$(EXT_LIBS_DIR)/cache:
+	ant retrieve -Dext.libs.dir.cache=$@
+
+$(EXT_LIBS_DIR)/include: $(EXT_LIBS_DIR)/cache
+	find $? -type f -exec tar -xvzf "{}" -C $(EXT_LIBS_DIR) \;
+
+retrieve: $(EXT_LIBS_DIR)/include
