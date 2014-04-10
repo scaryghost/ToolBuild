@@ -10,25 +10,24 @@
         <mkdir dir="${ext.libs.dir.cache}" />
     </target>
     <target name="ivy-resolve">
-        <ivy:resolve file="ivy.xml"/>
+        <ivy:resolve file="ivy.xml" />
         <ivy:retrieve pattern="${ext.libs.dir.cache}/[artifact]-[revision].[ext]" sync="true" />
         <path id="lib.path">
             <fileset dir="dist/libs" includes="**.jar"/>
         </path>
     </target>
     <target name="set-conf-linux" if="isUnix">
-        <property name="ivy.conf" value="linux" />
+        <property name="ivy.configurations" value="linux" />
     </target>
     <target name="set-conf-windows" if="isWindows">
-        <property name="ivy.conf" value="windows" />
+        <property name="ivy.configurations" value="windows" />
     </target>
     <target name="publish" depends="set-conf-linux,set-conf-windows,ivy-resolve" 
             description="Publish this build into repository">
         <ivy:deliver deliverpattern="${dist.dir}/[artifact].[ext]" pubrevision="${version}"/>
-        <echo>${ivy.conf}</echo>
         <ivy:publish pubrevision="${version}" resolver="default" conf="${ivy.conf}" >
             <artifacts pattern="${dist.dir}/[artifact].[ext]"/>
         </ivy:publish>
     </target>
-    <target name="retrieve" depends="setup,ivy-resolve" description="Retrieve dependencies" />
+    <target name="retrieve" depends="setup,set-conf-linux,set-conf-windows,ivy-resolve" description="Retrieve dependencies" />
 </project>
