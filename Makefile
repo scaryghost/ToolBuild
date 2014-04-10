@@ -10,7 +10,7 @@ static_lib:
 dynamic_lib:
 	$(BASE_MAKE) APP_TYPE=dynamic_lib
 
-all_lib: release_static_lib release_dynamic_lib
+all_lib: static_lib dynamic_lib
 
 debug_app:
 	$(BASE_MAKE) CONFIGURATION=debug APP_TYPE=app
