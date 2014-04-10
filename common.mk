@@ -81,7 +81,11 @@ APP_OUTPUT:=$(REAL_DIST_DIR)/$(APP_NAME)
 
 all: $(REAL_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 
+ifdef EXT_LIBS_DIR
 $(REAL_BUILD_DIR)/%.o: %.cpp | retrieve
+else
+$(REAL_BUILD_DIR)/%.o: %.cpp
+endif
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 $(REAL_BUILD_DIR):
@@ -101,7 +105,7 @@ else ifeq ($(APP_TYPE),app)
 	$(CXX) -o $@ $^ $(LD_FLAGS)
 endif
 
-ARCHIVE_NAME:=$(DIST_DIR)/$(APP_NAME).tar
+ARCHIVE_NAME:=$(DIST_DIR)/$(APP_NAME)-linux.tar
 
 archive: $(ARCHIVE_NAME).gz
 
@@ -125,7 +129,7 @@ cleanest:
 	rm -Rf $(BUILD_DIR) $(DIST_DIR) $(EXT_LIBS_DIR)
 
 $(EXT_LIBS_DIR)/cache:
-	ant retrieve -Dext.libs.dir.cache=$@
+	ant retrieve -Dext.libs.dir.cache=$@ -Dtool.build.dir=$(TOOL_BUILD_DIR)
 
 $(EXT_LIBS_DIR)/include: $(EXT_LIBS_DIR)/cache
 	find $? -type f -exec tar -xvzf "{}" -C $(EXT_LIBS_DIR) \;
