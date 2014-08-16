@@ -24,8 +24,7 @@
     </target>
     <target name="publish" depends="set-conf-linux,set-conf-windows,ivy-resolve" 
             description="Publish this build into repository">
-        <ivy:deliver deliverpattern="${dist.dir}/[artifact].[ext]" pubrevision="${version}"/>
-        <ivy:publish pubrevision="${version}" resolver="default" conf="${ivy.conf}" >
+        <ivy:publish pubrevision="${version}" resolver="default" conf="${ivy.configurations}" >
             <artifacts pattern="${dist.dir}/[artifact].[ext]"/>
         </ivy:publish>
     </target>
